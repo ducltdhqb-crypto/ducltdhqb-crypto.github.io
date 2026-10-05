@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -12,7 +12,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
 
     <style>
-        /* GIỮ NGUYÊN TOÀN BỘ CSS CỦA BẢN V5 */
         * { box-sizing: border-box; font-family: 'Nunito', sans-serif; }
         body { margin: 0; padding: 0; background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%); min-height: 100vh; overflow-x: hidden; color: #2d3436; }
         .hidden { display: none !important; }
@@ -55,12 +54,10 @@
 </head>
 <body>
 
-    <!-- BỌT BIỂN -->
     <div class="bubble" style="width: 50px; height: 50px; left: 10%; animation-duration: 6s;"></div>
     <div class="bubble" style="width: 80px; height: 80px; left: 80%; animation-duration: 9s;"></div>
     <div class="bubble" style="width: 40px; height: 40px; left: 40%; animation-duration: 5s;"></div>
 
-    <!-- SẢNH CHÍNH -->
     <div id="lobby-screen" class="glass-panel">
         <h1 style="color: #6c5ce7; font-size: 2rem;">✨ TRẠM HÓA HỌC ✨</h1>
         <p style="color: #636e72;">Nhập tên nhóm để bắt đầu thử thách</p>
@@ -68,7 +65,6 @@
         <button class="btn btn-primary" style="font-size: 1.4rem; padding: 15px 40px;" onclick="startGame()">VÀO CHƠI NGAY!</button>
     </div>
 
-    <!-- MẬT KHẨU GIÁO VIÊN -->
     <div id="password-modal" class="modal-overlay hidden">
         <div class="modal-box">
             <h2 style="color: #d63031; margin-top: 0;">🔒 Xác nhận Giáo Viên</h2>
@@ -81,7 +77,6 @@
         </div>
     </div>
 
-    <!-- GÓC GIÁO VIÊN -->
     <div id="admin-screen" class="glass-panel hidden" style="max-width: 900px;">
         <div class="admin-nav">
             <button class="admin-tab active" id="tab-btn-setup" onclick="switchAdminTab('setup')">⚙️ Cài đặt Đề thi</button>
@@ -107,7 +102,6 @@
         </div>
     </div>
 
-    <!-- GÓC HỌC SINH -->
     <div id="game-screen" class="hidden" style="max-width: 800px; margin: 10px auto; padding: 10px;">
         <div class="game-header">
             <div class="badge">👤 <span id="display-group"></span></div>
@@ -118,7 +112,6 @@
         <div class="symbol-dock" id="symbol-dock"></div>
     </div>
 
-    <!-- KẾT QUẢ -->
     <div id="result-screen" class="glass-panel hidden">
         <h1 style="color: #e17055; font-size: 2.5rem; margin-bottom: 10px;">XUẤT SẮC! 🎉</h1>
         <div style="background: #f1f2f6; padding: 20px; border-radius: 25px; margin-bottom: 20px;">
@@ -130,17 +123,17 @@
 
 <script>
     // ==========================================
-    // 1. CẤU HÌNH FIREBASE (BẠN COPY TỪ BƯỚC 1 DÁN VÀO ĐÂY)
+    // 1. CẤU HÌNH FIREBASE CỦA BẠN ĐÃ ĐƯỢC CHÈN SẴN CHUẨN XÁC
     // ==========================================
     const firebaseConfig = {
-  apiKey: "AIzaSyDaFoGOeic30XPLeuKc1o8Pzr81JC95c9Y",
-  authDomain: "hocvui-bbb0f.firebaseapp.com",
-  databaseURL: "https://hocvui-bbb0f-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "hocvui-bbb0f",
-  storageBucket: "hocvui-bbb0f.firebasestorage.app",
-  messagingSenderId: "523616626949",
-  appId: "1:523616626949:web:99fd474b8b2353bbbc6f6c"
-};
+        apiKey: "AIzaSyDaFoGOeic30XPLeuKc1o8Pzr81JC95c9Y", 
+        authDomain: "hocvui-bbb0f.firebaseapp.com",
+        databaseURL: "https://hocvui-bbb0f-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "hocvui-bbb0f",
+        storageBucket: "hocvui-bbb0f.firebasestorage.app",
+        messagingSenderId: "523616626949",
+        appId: "1:523616626949:web:99fd474b8b2353bbbc6f6c"
+    };
 
     // Khởi tạo Firebase
     firebase.initializeApp(firebaseConfig);
@@ -154,17 +147,16 @@
     let timerInterval; 
     let timeLeft = 60; let startTime; let groupName = "";
 
-    // LUÔN LẮNG NGHE ĐỀ THI TỪ GIÁO VIÊN
+    // Lắng nghe đề thi
     db.ref('chemData').on('value', (snapshot) => {
         if(snapshot.exists()) {
             gameData = snapshot.val();
-            // Cập nhật ô nhập liệu nếu đang mở tab Giáo viên
             const dataInput = document.getElementById('data-input');
             if(dataInput) dataInput.value = gameData.rawText;
         }
     });
 
-    // LUÔN LẮNG NGHE BẢNG XẾP HẠNG (Cho tab Admin)
+    // Lắng nghe bảng xếp hạng
     db.ref('leaderboard').on('value', (snapshot) => {
         const tbody = document.getElementById("admin-leaderboard");
         if (!tbody) return;
@@ -177,8 +169,6 @@
 
         let lb = [];
         snapshot.forEach((child) => { lb.push(child.val()); });
-        
-        // Thuật toán xếp hạng
         lb.sort((a, b) => (b.score === a.score) ? (a.time - b.time) : (b.score - a.score));
 
         lb.forEach((t, i) => {
@@ -187,7 +177,6 @@
             tbody.innerHTML += `<tr class="${rowClass}"><td>${rankIcon}</td><td>${t.name}</td><td>${t.score}</td><td>${t.time}s</td></tr>`;
         });
     });
-
 
     // ==========================================
     // 3. LOGIC GIAO DIỆN & GAME
@@ -211,7 +200,7 @@
         }
 
         if(!gameData.elements || gameData.elements.length === 0) {
-            return alert("Thầy cô chưa nạp đề thi, em hãy chờ một chút nhé!");
+            return alert("Thầy cô chưa phát đề thi lên hệ thống, em hãy chờ một chút nhé!");
         }
 
         document.getElementById('display-group').innerText = groupName;
@@ -265,3 +254,119 @@
                 if (name === "") distractors.push(sym);
                 else elements.push({ symbol: sym, name: name });
             }
+        });
+
+        if(elements.length === 0) return alert("❌ Dữ liệu không hợp lệ! Hãy kiểm tra khoảng cách Tab.");
+
+        gameData = { elements, distractors, rawText: text };
+        
+        db.ref('chemData').set(gameData).then(() => {
+            alert("🎉 Đã lưu lên Cloud! Học sinh mở điện thoại là thấy đề ngay.");
+        }).catch((error) => {
+            alert("Lỗi lưu dữ liệu: " + error.message);
+        });
+    }
+
+    function clearLeaderboard() {
+        if(confirm("⚠️ Xóa sạch điểm trên hệ thống để bắt đầu vòng thi mới?")) {
+            db.ref('leaderboard').remove(); 
+        }
+    }
+
+    function buildGameBoard() {
+        const dock = document.getElementById("symbol-dock");
+        const grid = document.getElementById("targets-grid");
+        dock.innerHTML = ''; grid.innerHTML = '';
+        selectedSymbol = null;
+
+        let allSymbols = [...gameData.elements.map(e => e.symbol), ...gameData.distractors].sort(() => Math.random() - 0.5);
+        allSymbols.forEach(sym => {
+            let item = document.createElement("div");
+            item.className = "symbol-item"; item.innerText = sym;
+            item.onclick = () => selectFromDock(item);
+            dock.appendChild(item);
+        });
+
+        let shuffledElements = [...gameData.elements].sort(() => Math.random() - 0.5);
+        shuffledElements.forEach(item => {
+            let card = document.createElement("div");
+            card.className = "target-card";
+            
+            let dropCircle = document.createElement("div");
+            dropCircle.className = "drop-circle";
+            dropCircle.dataset.correct = item.symbol;
+            dropCircle.onclick = () => placeInTarget(dropCircle, card);
+            
+            let nameSpan = document.createElement("div");
+            nameSpan.className = "target-name";
+            nameSpan.innerText = item.name;
+            
+            card.appendChild(dropCircle); card.appendChild(nameSpan);
+            grid.appendChild(card);
+        });
+    }
+
+    function selectFromDock(item) {
+        if(selectedSymbol) selectedSymbol.classList.remove("selected");
+        if(selectedSymbol === item) { selectedSymbol = null; return; }
+        selectedSymbol = item;
+        selectedSymbol.classList.add("selected");
+        document.querySelectorAll('.target-card').forEach(card => card.classList.add('active-drop'));
+    }
+
+    function placeInTarget(circle, card) {
+        document.querySelectorAll('.target-card').forEach(c => c.classList.remove('active-drop'));
+
+        if (circle.innerText !== "" && !selectedSymbol) {
+            let oldText = circle.innerText;
+            circle.innerText = "";
+            circle.style.background = "#f1f2f6"; circle.style.color = "#0984e3";
+            let item = document.createElement("div");
+            item.className = "symbol-item"; item.innerText = oldText;
+            item.onclick = () => selectFromDock(item);
+            document.getElementById("symbol-dock").appendChild(item);
+            return;
+        }
+
+        if (!selectedSymbol) return;
+
+        if (circle.innerText !== "") {
+            let oldText = circle.innerText;
+            let oldItem = document.createElement("div");
+            oldItem.className = "symbol-item"; oldItem.innerText = oldText;
+            oldItem.onclick = () => selectFromDock(oldItem);
+            document.getElementById("symbol-dock").appendChild(oldItem);
+        }
+
+        circle.innerText = selectedSymbol.innerText;
+        circle.style.background = "#ffeaa7";
+        circle.style.color = "#d63031";
+
+        selectedSymbol.remove();
+        selectedSymbol = null;
+    }
+
+    function endGame(isTimeOut) {
+        clearInterval(timerInterval);
+        let timeUsed = Math.floor((Date.now() - startTime) / 1000);
+        if (timeUsed > 60) timeUsed = 60;
+
+        let correctCount = 0;
+        document.querySelectorAll(".drop-circle").forEach(circle => {
+            if (circle.innerText === circle.dataset.correct) correctCount++;
+        });
+
+        let score = Math.round(correctCount * (100 / gameData.elements.length));
+        
+        let result = { name: groupName, score: score, time: timeUsed };
+        db.ref('leaderboard').push(result);
+
+        showScreen('result-screen');
+        document.getElementById('final-score').innerText = `ĐIỂM: ${score} / 100`;
+        document.getElementById('final-time').innerText = `⏱️ Thời gian thi: ${timeUsed} giây`;
+
+        if(score >= 50) { confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } }); }
+    }
+</script>
+</body>
+</html>
