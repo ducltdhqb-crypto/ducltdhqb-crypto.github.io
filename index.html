@@ -113,7 +113,10 @@
     </div>
 
     <div id="result-screen" class="glass-panel hidden">
-        <h1 style="color: #e17055; font-size: 2.5rem; margin-bottom: 10px;">XUẤT SẮC! 🎉</h1>
+        <!-- ĐÃ SỬA: Phân mảng Tiêu đề và Subtitle để JavaScript thay đổi -->
+        <h1 id="result-title" style="color: #e17055; font-size: 2.2rem; margin-bottom: 5px;"></h1>
+        <p id="result-subtitle" style="color: #636e72; font-weight: bold; font-size: 1.1rem; margin-top: 0; margin-bottom: 20px;"></p>
+        
         <div style="background: #f1f2f6; padding: 20px; border-radius: 25px; margin-bottom: 20px;">
             <h2 id="final-score" style="color: #00b894; margin: 0; font-size: 2rem;"></h2>
             <p id="final-time" style="color: #636e72; font-weight: 800; font-size: 1.2rem; margin-top: 10px;"></p>
@@ -123,7 +126,8 @@
 
 <script>
     // ==========================================
-    // 1. CẤU HÌNH FIREBASE CỦA BẠN ĐÃ ĐƯỢC CHÈN SẴN CHUẨN XÁC
+    // 1. CẤU HÌNH FIREBASE 
+    // !!! NHỚ THAY DÒNG API KEY CỦA BẠN VÀO ĐÂY NHÉ !!!
     // ==========================================
     const firebaseConfig = {
         apiKey: "AIzaSyDaFoGOeic30XPLeuKc1o8Pzr81JC95c9Y", 
@@ -135,19 +139,17 @@
         appId: "1:523616626949:web:99fd474b8b2353bbbc6f6c"
     };
 
-    // Khởi tạo Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
     // ==========================================
-    // 2. BIẾN TOÀN CỤC & LẮNG NGHE DỮ LIỆU TỪ CLOUD
+    // 2. LẮNG NGHE DỮ LIỆU TỪ CLOUD (CÓ CẢM XÚC TRÊN BẢNG ĐIỂM)
     // ==========================================
     let gameData = { elements: [], distractors: [], rawText: "" };
     let selectedSymbol = null;
     let timerInterval; 
     let timeLeft = 60; let startTime; let groupName = "";
 
-    // Lắng nghe đề thi
     db.ref('chemData').on('value', (snapshot) => {
         if(snapshot.exists()) {
             gameData = snapshot.val();
@@ -156,7 +158,6 @@
         }
     });
 
-    // Lắng nghe bảng xếp hạng
     db.ref('leaderboard').on('value', (snapshot) => {
         const tbody = document.getElementById("admin-leaderboard");
         if (!tbody) return;
@@ -174,7 +175,14 @@
         lb.forEach((t, i) => {
             let rowClass = i === 0 ? "rank-1" : "";
             let rankIcon = i === 0 ? "🥇" : (i === 1 ? "🥈" : (i === 2 ? "🥉" : i + 1));
-            tbody.innerHTML += `<tr class="${rowClass}"><td>${rankIcon}</td><td>${t.name}</td><td>${t.score}</td><td>${t.time}s</td></tr>`;
+            
+            // XÁC ĐỊNH EMOJI THEO ĐIỂM ĐỂ HIỆN TRÊN BẢNG GIÁO VIÊN
+            let emoji = "🤩";
+            if (t.score <= 30) emoji = "😵‍💫"; // 0-30 điểm
+            else if (t.score <= 60) emoji = "🤔"; // 40-60 điểm
+            else if (t.score <= 80) emoji = "😎"; // 70-80 điểm
+            
+            tbody.innerHTML += `<tr class="${rowClass}"><td>${rankIcon}</td><td>${t.name}</td><td><span style="font-size:1.3rem">${t.score} ${emoji}</span></td><td>${t.time}s</td></tr>`;
         });
     });
 
@@ -361,11 +369,36 @@
         let result = { name: groupName, score: score, time: timeUsed };
         db.ref('leaderboard').push(result);
 
+        // ==========================================
+        // TÙY CHỈNH LỜI NHẮN THEO TỪNG PHỔ ĐIỂM
+        // ==========================================
+        let titleText = "";
+        let subtitleText = "";
+
+        if (score <= 30) {
+            titleText = "ỐI GIỜI ÔI! 😵‍💫";
+            subtitleText = "Sai hơi nhiều rồi nha! Về lật sách ôn bài ngay và luôn!";
+        } else if (score <= 60) {
+            titleText = "SUÝT NỮA THÌ GIỎI! 🤔";
+            subtitleText = "Có học bài nhưng chắc vẫn còn nhầm lẫn đúng không? Cố lên xíu nữa!";
+        } else if (score <= 80) {
+            titleText = "GIỎI LẮM! 😎";
+            subtitleText = "Kiến thức khá vững đấy, cố gắng phát huy nha!";
+        } else {
+            titleText = "TUYỆT VỜI ÔNG MẶT TRỜI! 🌞";
+            subtitleText = "Đỉnh của chóp! Điểm mười không có nhưng!";
+        }
+
         showScreen('result-screen');
+        
+        // Gán chữ vào HTML
+        document.getElementById('result-title').innerText = titleText;
+        document.getElementById('result-subtitle').innerText = subtitleText;
         document.getElementById('final-score').innerText = `ĐIỂM: ${score} / 100`;
         document.getElementById('final-time').innerText = `⏱️ Thời gian thi: ${timeUsed} giây`;
 
-        if(score >= 50) { confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } }); }
+        // Chỉ bắn pháo hoa nếu trên 70 điểm
+        if(score >= 70) { confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } }); }
     }
 </script>
 </body>
